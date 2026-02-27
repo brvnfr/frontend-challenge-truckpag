@@ -139,8 +139,8 @@ export function FilmDetailsSheet({
                     <Apple size={16} /> RT: <span className="text-fg">{rtLabel}</span>
                   </span>
                   <span className="text-muted">·</span>
-                  <span className="inline-flex items-center gap-1text-muted">
-                    <Star size={16} /> Sua nota: <span className="text-fg ms-2">{personalLabel}</span>
+                  <span className="inline-flex items-center gap-1 text-muted">
+                    <Star size={16} />  Sua nota:  <span className="text-fg ml-0">{personalLabel}</span>
                   </span>
                 </div>
 

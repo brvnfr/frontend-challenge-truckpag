@@ -25,14 +25,13 @@ export function ThemeToggle({ className }: Props) {
       type="button"
       onClick={onToggle}
       className={cn(
-        "inline-flex items-center gap-2 rounded-[var(--radius-md)] border border-border bg-surface px-3 py-2 text-sm",
+        "inline-flex items-center gap-2 rounded-full border border-border bg-surface px-2 py-2 text-sm",
         "shadow-[var(--shadow-soft)] hover:bg-surface-2",
         className
       )}
       aria-label="Alternar tema"
     >
       <Icon size={16} />
-      <span className="text-muted">{mode === "dark" ? "Dark" : "Light"}</span>
     </button>
   );
 }
