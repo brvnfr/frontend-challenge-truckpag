@@ -1,13 +1,16 @@
-import { useCallback, useMemo } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useFilmsQuery, useFilmActions } from "@/presentation/hooks";
 import {
   FilmCardSkeleton,
+  FilmDetailsSheet,
   FilmFiltersBar,
   FilmList,
+  FilmNotesModal,
 } from "@/presentation/components/films";
 import { useGhibliStore } from "@/app/films";
 import { queryFilms } from "@/core/domain/services";
-import type { StarsFilter } from "@/core/domain/types";
+import type { PersonalRating, StarsFilter } from "@/core/domain/types";
+import { getDefaultFilmMeta } from "@/core/domain/types";
 
 function ErrorState(props: { message: string; onRetry: () => void }) {
   return (
@@ -41,12 +44,12 @@ function EmptyState(props: { title: string; description: string }) {
  * Página do desafio: lista filmes do Studio Ghibli com:
  * - filtros/ordenação
  * - favorito/assistido
- * - anotação + avaliação pessoal
+ * - anotação + avaliação pessoal (modal)
+ * - detalhes completos (sheet)
  * - persistência no localStorage
  */
 export function FilmsPage() {
-  const { data, isLoading, isError, error, refetch, isFetching } =
-    useFilmsQuery();
+  const { data, isLoading, isError, error, refetch, isFetching } = useFilmsQuery();
 
   const metaById = useGhibliStore((s) => s.metaById);
   const filters = useGhibliStore((s) => s.filters);
@@ -63,12 +66,22 @@ export function FilmsPage() {
   const setSortKey = useGhibliStore((s) => s.setSortKey);
   const setSortDirection = useGhibliStore((s) => s.setSortDirection);
 
-  const { onToggleFavorite, onToggleWatched, onSaveNote, onRemoveNote } =
-    useFilmActions();
+  const { onToggleFavorite, onToggleWatched, onSaveNote, onRemoveNote } = useFilmActions();
+
+  const [detailsFilmId, setDetailsFilmId] = useState<string | null>(null);
+  const [notesState, setNotesState] = useState<{ filmId: string | null; presetRating: PersonalRating | null }>(
+    { filmId: null, presetRating: null }
+  );
 
   const onRefresh = useCallback(() => {
     void refetch();
   }, [refetch]);
+
+  const filmsById = useMemo(() => {
+    const map = new Map<string, NonNullable<typeof data>[number]>();
+    (data ?? []).forEach((f) => map.set(f.id, f));
+    return map;
+  }, [data]);
 
   const visibleFilms = useMemo(() => {
     if (!data) return [];
@@ -77,6 +90,20 @@ export function FilmsPage() {
 
   const total = data?.length ?? 0;
   const visible = visibleFilms.length;
+
+  const openDetails = useCallback((filmId: string) => setDetailsFilmId(filmId), []);
+  const closeDetails = useCallback(() => setDetailsFilmId(null), []);
+
+  const openNotes = useCallback((filmId: string, presetRating?: PersonalRating) => {
+    setNotesState({ filmId, presetRating: presetRating ?? null });
+  }, []);
+  const closeNotes = useCallback(() => setNotesState({ filmId: null, presetRating: null }), []);
+
+  const detailsFilm = detailsFilmId ? filmsById.get(detailsFilmId) ?? null : null;
+  const detailsMeta = detailsFilmId ? metaById[detailsFilmId] ?? getDefaultFilmMeta() : getDefaultFilmMeta();
+
+  const notesFilm = notesState.filmId ? filmsById.get(notesState.filmId) ?? null : null;
+  const notesMeta = notesState.filmId ? metaById[notesState.filmId] ?? getDefaultFilmMeta() : getDefaultFilmMeta();
 
   if (isLoading) {
     return (
@@ -97,9 +124,7 @@ export function FilmsPage() {
 
   if (isError) {
     const message =
-      error instanceof Error
-        ? error.message
-        : "Erro inesperado ao carregar os filmes.";
+      error instanceof Error ? error.message : "Erro inesperado ao carregar os filmes.";
     return <ErrorState message={message} onRetry={onRefresh} />;
   }
 
@@ -113,7 +138,7 @@ export function FilmsPage() {
   }
 
   return (
-    <section className="space-y-4">
+    <section className="space-y-8">
       <FilmFiltersBar
         total={total}
         visible={visible}
@@ -145,10 +170,39 @@ export function FilmsPage() {
           highlightSynopsis={filters.includeSynopsis}
           onToggleFavorite={onToggleFavorite}
           onToggleWatched={onToggleWatched}
-          onSaveNote={onSaveNote}
-          onRemoveNote={onRemoveNote}
+          onOpenDetails={openDetails}
+          onOpenNotes={openNotes}
         />
       )}
+
+      <FilmDetailsSheet
+        open={detailsFilmId != null}
+        film={detailsFilm}
+        meta={detailsMeta}
+        searchQuery={filters.query}
+        highlightSynopsis={filters.includeSynopsis}
+        onClose={closeDetails}
+        onOpenNotes={(filmId) => {
+          // Mantém o sheet aberto ao editar notas (evita desmontar a UI ao salvar/fechar o modal).
+          openNotes(filmId);
+        }}
+      />
+
+      <FilmNotesModal
+        open={notesState.filmId != null}
+        film={notesFilm}
+        meta={notesMeta}
+        presetRating={notesState.presetRating}
+        onClose={closeNotes}
+        onSave={(filmId, note, rating) => {
+          onSaveNote(filmId, note, rating);
+          closeNotes();
+        }}
+        onRemove={(filmId) => {
+          onRemoveNote(filmId);
+          closeNotes();
+        }}
+      />
     </section>
   );
 }
