@@ -11,8 +11,7 @@ type Props = {
 /**
  * FilmBadges
  *
- * Badges exibidas sobre a imagem (card/sheet), alinhadas verticalmente.
- * Mantém a responsabilidade visual em um único componente.
+ * Badges exibidas sobre a imagem (card/sheet).
  */
 export function FilmBadges({ meta }: Props) {
   const isTopRated = meta.rating === 5;

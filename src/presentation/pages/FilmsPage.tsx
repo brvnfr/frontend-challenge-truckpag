@@ -183,7 +183,6 @@ export function FilmsPage() {
         highlightSynopsis={filters.includeSynopsis}
         onClose={closeDetails}
         onOpenNotes={(filmId) => {
-          // Mantém o sheet aberto ao editar notas (evita desmontar a UI ao salvar/fechar o modal).
           openNotes(filmId);
         }}
       />

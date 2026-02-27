@@ -40,7 +40,6 @@ export function FilmNotesModal({
   const onKeyDown = useCallback(
     (e: KeyboardEvent) => {
       if (e.key === "Escape") {
-        // Evita que o sheet (listener no document) feche junto.
         e.preventDefault();
         e.stopPropagation();
         e.stopImmediatePropagation();
@@ -52,7 +51,6 @@ export function FilmNotesModal({
 
   useEffect(() => {
     if (!open) return;
-    // Capture para interceptar ESC antes do sheet.
     document.addEventListener("keydown", onKeyDown, true);
     const prev = document.body.style.overflow;
     document.body.style.overflow = "hidden";

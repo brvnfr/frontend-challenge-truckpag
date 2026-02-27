@@ -188,7 +188,7 @@ export function FilmFiltersBar(props: Props) {
             <option value="title">Título</option>
             <option value="duration">Duração</option>
             <option value="personal_rating">Avaliação pessoal</option>
-            <option value="rt_score">rt_score</option>
+            <option value="rt_score">Avaliação Rotten Tomato</option>
           </select>
 
           <select
