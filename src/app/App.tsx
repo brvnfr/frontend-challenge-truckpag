@@ -1,4 +1,4 @@
-import { AppProviders } from "@/";
+import { AppProviders } from "@/app/providers";
 import { AppShell } from "@/presentation/components/layout";
 import { FilmsPage } from "@/presentation/pages";
 
