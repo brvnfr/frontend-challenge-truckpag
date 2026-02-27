@@ -12,12 +12,13 @@ function getMeta(metaById: FilmMetaById, filmId: string) {
   return metaById[filmId] ?? getDefaultFilmMeta();
 }
 
-function compareNullableNumber(a: number | null, b: number | null): number {
+function compareNullableNumber(a: number | null, b: number | null, direction: "asc" | "desc"): number {
   // sempre manda null para o final, independente da direção
   if (a == null && b == null) return 0;
   if (a == null) return 1;
   if (b == null) return -1;
-  return a - b;
+
+  return direction === "asc" ? a - b : b - a;
 }
 
 export type QueryFilmsParams = {
@@ -65,19 +66,19 @@ export function queryFilms(params: QueryFilmsParams): FilmEntity[] {
         break;
 
       case "duration":
-        cmp = compareNullableNumber(a.runningTimeMinutes, b.runningTimeMinutes);
+        cmp = compareNullableNumber(a.runningTimeMinutes, b.runningTimeMinutes, sort.direction);
         break;
 
       case "personal_rating":
-        cmp = compareNullableNumber(aMeta.rating ?? null, bMeta.rating ?? null);
+        cmp = compareNullableNumber(aMeta.rating ?? null, bMeta.rating ?? null, sort.direction);
         break;
 
       case "rt_score":
-        cmp = compareNullableNumber(a.rtScore, b.rtScore);
+        cmp = compareNullableNumber(a.rtScore, b.rtScore, sort.direction);
         break;
     }
 
-    return sort.direction === "asc" ? cmp : -cmp;
+    return sort.key === "title" && sort.direction === "desc" ? -cmp : cmp;
   });
 
   return sorted;
