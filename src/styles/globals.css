@@ -61,3 +61,11 @@ body {
   background: var(--color-bg);
   color: var(--color-fg);
 }
+
+/* Utilities */
+.line-clamp-4 {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 4;
+  overflow: hidden;
+}

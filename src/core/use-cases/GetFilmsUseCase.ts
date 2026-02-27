@@ -1,5 +1,10 @@
-import type { FilmRepository } from "../repositories/FilmRepository";
+import type {
+  FilmRepository,
+  FilmRepositoryGetAllOptions,
+} from "../repositories/FilmRepository";
 import { FilmEntity } from "../domain/entities/Film";
+
+export type GetFilmsUseCaseOptions = FilmRepositoryGetAllOptions;
 
 /**
  * GetFilmsUseCase
@@ -9,8 +14,8 @@ import { FilmEntity } from "../domain/entities/Film";
 export class GetFilmsUseCase {
   constructor(private readonly repository: FilmRepository) {}
 
-  async execute(): Promise<FilmEntity[]> {
-    const films = await this.repository.getAll();
+  async execute(options?: GetFilmsUseCaseOptions): Promise<FilmEntity[]> {
+    const films = await this.repository.getAll(options);
     return films.map((f) => new FilmEntity(f));
   }
 }

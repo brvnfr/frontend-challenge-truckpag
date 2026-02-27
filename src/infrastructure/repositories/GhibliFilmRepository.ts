@@ -1,4 +1,7 @@
-import type { FilmRepository } from "@/core/repositories/FilmRepository";
+import type {
+  FilmRepository,
+  FilmRepositoryGetAllOptions,
+} from "@/core/repositories/FilmRepository";
 import type { Film } from "@/core/domain/entities/Film";
 import type { HttpClient } from "../http/HttpClient";
 
@@ -10,7 +13,7 @@ import type { HttpClient } from "../http/HttpClient";
 export class GhibliFilmRepository implements FilmRepository {
   constructor(private readonly http: HttpClient) {}
 
-  getAll(): Promise<Film[]> {
-    return this.http.get<Film[]>("/films");
+  getAll(options?: FilmRepositoryGetAllOptions): Promise<Film[]> {
+    return this.http.get<Film[]>("/films", { signal: options?.signal });
   }
 }
