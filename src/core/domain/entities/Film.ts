@@ -88,4 +88,19 @@ export class FilmEntity {
     const minutes = this.runningTimeMinutes;
     return minutes == null ? "—" : `${minutes} min`;
   }
+
+  /**
+   * Retorna uma duração no formato "0h 00m" ,
+   * ou "—" se não houver.
+   */
+  get runningTimeHhMmLabel(): string {
+    const minutes = this.runningTimeMinutes;
+    if (minutes == null) return "—";
+
+    const h = Math.floor(minutes / 60);
+    const m = minutes % 60;
+
+    if (h <= 0) return `${m}m`;
+    return `${h}h ${m}m`;
+  }
 }

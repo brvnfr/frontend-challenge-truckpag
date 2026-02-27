@@ -12,8 +12,9 @@ type Props = {
 
   onToggleFavorite: (filmId: string) => void;
   onToggleWatched: (filmId: string) => void;
-  onSaveNote: (filmId: string, note: string, rating: PersonalRating) => void;
-  onRemoveNote: (filmId: string) => void;
+
+  onOpenDetails: (filmId: string) => void;
+  onOpenNotes: (filmId: string, presetRating?: PersonalRating) => void;
 };
 
 /**
@@ -28,11 +29,11 @@ export function FilmList({
   highlightSynopsis,
   onToggleFavorite,
   onToggleWatched,
-  onSaveNote,
-  onRemoveNote,
+  onOpenDetails,
+  onOpenNotes,
 }: Props) {
   return (
-    <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
       {films.map((film) => (
         <FilmCard
           key={film.id}
@@ -42,8 +43,8 @@ export function FilmList({
           highlightSynopsis={highlightSynopsis}
           onToggleFavorite={onToggleFavorite}
           onToggleWatched={onToggleWatched}
-          onSaveNote={onSaveNote}
-          onRemoveNote={onRemoveNote}
+          onOpenDetails={onOpenDetails}
+          onOpenNotes={onOpenNotes}
         />
       ))}
     </div>
