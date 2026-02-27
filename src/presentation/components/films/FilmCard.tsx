@@ -1,4 +1,4 @@
-import { CheckCircle2, Heart, NotebookPen, Star } from "lucide-react";
+import { Apple, CheckCircle2, Heart, NotebookPen, Star } from "lucide-react";
 import { useCallback, useMemo } from "react";
 import type { ReactNode } from "react";
 import type { FilmEntity } from "@/core/domain/entities/Film";
@@ -138,10 +138,12 @@ export function FilmCard({
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="inline-flex items-center gap-2 text-sm text-muted">
               <span className="inline-flex items-center gap-1">
-                <Star size={16} /> {rtLabel}
+                <Apple size={16} /> {rtLabel}
               </span>
               <span className="text-muted">·</span>
-              <span>{personalRatingLabel}</span>
+              <span className="inline-flex items-center gap-1">
+                <Star size={16} />
+                {personalRatingLabel}</span>
             </div>
 
             <div
