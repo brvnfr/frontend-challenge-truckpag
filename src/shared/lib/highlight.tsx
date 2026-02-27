@@ -29,7 +29,9 @@ export function highlightText(text: string, options: Options): ReactNode {
   const regex = new RegExp(`(${terms.join("|")})`, "gi");
   const parts = text.split(regex);
 
-  const cls = options.highlightClassName ?? "rounded bg-brand-200 px-1 dark:bg-brand-700";
+  const cls =
+    options.highlightClassName ??
+    "rounded bg-warning/25 px-1 text-fg dark:bg-warning/20";
 
   return parts.map((part, idx) => {
     if (regex.test(part)) {

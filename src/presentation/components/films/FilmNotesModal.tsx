@@ -39,14 +39,19 @@ export function FilmNotesModal({
 
   const onKeyDown = useCallback(
     (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
+      if (e.key === "Escape") {
+        e.preventDefault();
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+        onClose();
+      }
     },
     [onClose]
   );
 
   useEffect(() => {
     if (!open) return;
-    document.addEventListener("keydown", onKeyDown);
+    document.addEventListener("keydown", onKeyDown, true);
     const prev = document.body.style.overflow;
     document.body.style.overflow = "hidden";
 
@@ -57,7 +62,7 @@ export function FilmNotesModal({
     queueMicrotask(() => closeBtnRef.current?.focus());
 
     return () => {
-      document.removeEventListener("keydown", onKeyDown);
+      document.removeEventListener("keydown", onKeyDown, true);
       document.body.style.overflow = prev;
     };
   }, [meta.note, meta.rating, onKeyDown, open, presetRating]);
@@ -84,7 +89,7 @@ export function FilmNotesModal({
   const ratingLabel = rating != null ? `${rating}/5` : "—";
 
   return (
-    <div className="fixed inset-0 z-50">
+    <div className="fixed inset-0 z-[60]">
       <button
         type="button"
         aria-label="Fechar modal"
@@ -138,7 +143,7 @@ export function FilmNotesModal({
               rows={5}
               className={cn(
                 "w-full resize-none rounded-[var(--radius-md)] border border-border bg-surface px-3 py-2 text-sm outline-none",
-                "focus:border-brand-500 focus:ring-2 focus:ring-brand-200 dark:focus:ring-brand-800"
+                "focus:border-primary focus:ring-2 focus:ring-primary/25"
               )}
             />
           </label>

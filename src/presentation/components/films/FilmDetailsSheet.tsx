@@ -1,10 +1,11 @@
-import { X, Star, NotebookPen } from "lucide-react";
+import { X, Star, NotebookPen, Apple } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef } from "react";
 import type { FilmEntity } from "@/core/domain/entities/Film";
 import type { FilmMeta } from "@/core/domain/types";
 import { hasNote } from "@/core/domain/types";
 import { cn } from "@/shared/lib/cn";
 import { highlightText } from "@/shared/lib/highlight";
+import { FilmBadges } from "./FilmBadges";
 
 type Props = {
   open: boolean;
@@ -112,18 +113,8 @@ export function FilmDetailsSheet({
         <div className="h-full overflow-y-auto">
           <div className="relative">
             <img src={hero} alt="Banner do filme" className="h-[220px] w-full object-cover" />
-            <div className="absolute bottom-3 left-3 flex items-center gap-2">
-              {hasNote(meta) ? (
-                <span className="inline-flex items-center gap-1 rounded-full bg-surface px-2 py-1 text-xs font-medium shadow-[var(--shadow-soft)]">
-                  <NotebookPen size={14} /> Anotações
-                </span>
-              ) : null}
-
-              {meta.rating != null ? (
-                <span className="inline-flex items-center gap-1 rounded-full bg-warning/15 px-2 py-1 text-xs font-semibold text-fg shadow-[var(--shadow-soft)]">
-                  <Star size={14} /> {meta.rating}/5
-                </span>
-              ) : null}
+            <div className="absolute right-3 top-3">
+              <FilmBadges meta={meta} />
             </div>
           </div>
 
@@ -145,11 +136,11 @@ export function FilmDetailsSheet({
 
                 <div className="flex flex-wrap items-center gap-2 text-sm">
                   <span className="inline-flex items-center gap-1 text-muted">
-                    <Star size={16} /> RT: <span className="text-fg">{rtLabel}</span>
+                    <Apple size={16} /> RT: <span className="text-fg">{rtLabel}</span>
                   </span>
                   <span className="text-muted">·</span>
-                  <span className="text-muted">
-                    Sua nota: <span className="text-fg">{personalLabel}</span>
+                  <span className="inline-flex items-center gap-1text-muted">
+                    <Star size={16} /> Sua nota: <span className="text-fg ms-2">{personalLabel}</span>
                   </span>
                 </div>
 

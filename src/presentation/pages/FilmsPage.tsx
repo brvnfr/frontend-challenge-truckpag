@@ -183,7 +183,6 @@ export function FilmsPage() {
         highlightSynopsis={filters.includeSynopsis}
         onClose={closeDetails}
         onOpenNotes={(filmId) => {
-          closeDetails();
           openNotes(filmId);
         }}
       />

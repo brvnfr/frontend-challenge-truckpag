@@ -7,6 +7,7 @@ import { hasNote } from "@/core/domain/types";
 import { cn } from "@/shared/lib/cn";
 import { highlightText } from "@/shared/lib/highlight";
 import { StarRating } from "./StarRating";
+import { FilmBadges } from "./FilmBadges";
 
 type Props = {
   film: FilmEntity;
@@ -41,6 +42,7 @@ export function FilmCard({
   onOpenNotes,
 }: Props) {
   const poster = film.raw.image || film.raw.movie_banner;
+  const isTopRated = meta.rating === 5;
 
   const synopsis = useMemo(() => {
     if (!highlightSynopsis) return film.description;
@@ -79,7 +81,10 @@ export function FilmCard({
     return (
       <button
         type="button"
-        onClick={props.onClick}
+        onClick={(e) => {
+          e.stopPropagation();
+          props.onClick();
+        }}
         className={cn(
           "inline-flex w-full items-center justify-center gap-2 rounded-[var(--radius-md)] border px-3 py-2 text-sm font-medium",
           "border-border bg-surface hover:bg-surface-2",
@@ -93,31 +98,39 @@ export function FilmCard({
   }
 
   return (
-    <article className="overflow-hidden rounded-[var(--radius-lg)] border border-border bg-surface shadow-[var(--shadow-soft)]">
+    <article
+      role="button"
+      tabIndex={0}
+      aria-label={`Abrir detalhes do filme ${film.title}`}
+      onClick={onClickDetails}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onClickDetails();
+        }
+      }}
+      className={cn(
+        "group overflow-hidden rounded-[var(--radius-lg)] border border-border bg-surface shadow-[var(--shadow-soft)]",
+        "cursor-pointer transition-transform duration-200 will-change-transform",
+        "hover:-translate-y-0.5 hover:shadow-[var(--shadow-popover)] focus:outline-none",
+        "focus:ring-2 focus:ring-primary/25",
+        isTopRated && "border-warning/35 bg-warning/5"
+      )}
+    >
       <div className="relative bg-surface-2">
         <img
           src={poster}
           alt={`Poster do filme ${film.title}`}
           loading="lazy"
-          className="h-[320px] w-full object-cover"
+          className="h-[300px] w-full object-cover"
         />
 
-        <div className="absolute left-3 top-3 flex items-center gap-2">
-          {hasNote(meta) ? (
-            <span className="inline-flex items-center gap-1 rounded-full bg-surface px-2 py-1 text-xs font-medium shadow-[var(--shadow-soft)]">
-              <NotebookPen size={14} /> Anotações
-            </span>
-          ) : null}
-
-          {meta.rating != null ? (
-            <span className="inline-flex items-center gap-1 rounded-full bg-warning/15 px-2 py-1 text-xs font-semibold text-fg shadow-[var(--shadow-soft)]">
-              <Star size={14} /> {meta.rating}/5
-            </span>
-          ) : null}
+        <div className="absolute right-3 top-3">
+          <FilmBadges meta={meta} />
         </div>
       </div>
 
-      <div className="flex flex-col gap-4 p-5">
+      <div className="flex flex-col gap-3 p-4">
         <header className="space-y-2">
           <h3 className="text-base font-semibold leading-snug sm:text-lg">{film.title}</h3>
           <p className="text-sm text-muted">{subtitle}</p>
@@ -131,16 +144,25 @@ export function FilmCard({
               <span>{personalRatingLabel}</span>
             </div>
 
-            <StarRating value={meta.rating} onChange={onClickNotesWithRating} size={16} />
+            <div
+              onClick={(e) => e.stopPropagation()}
+              onPointerDown={(e) => e.stopPropagation()}
+              className="shrink-0"
+            >
+              <StarRating value={meta.rating} onChange={onClickNotesWithRating} size={16} />
+            </div>
           </div>
         </header>
 
         <div>
-          <p className={cn("text-sm leading-relaxed text-fg", "line-clamp-4")}>{synopsis}</p>
+          <p className={cn("text-sm leading-relaxed text-fg", "line-clamp-3")}>{synopsis}</p>
 
           <button
             type="button"
-            onClick={onClickDetails}
+            onClick={(e) => {
+              e.stopPropagation();
+              onClickDetails();
+            }}
             className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-muted hover:text-fg"
           >
             Ler mais
@@ -149,16 +171,16 @@ export function FilmCard({
 
         <div className="text-xs text-muted">
           <p>
-            Diretor: <span className="text-fg">{film.director}</span>
+            Dir.: <span className="text-fg">{film.director}</span>
           </p>
           <p>
-            Produtor: <span className="text-fg">{film.producer}</span>
+            Prod.: <span className="text-fg">{film.producer}</span>
           </p>
         </div>
 
         {hasNote(meta) ? (
           <div className="rounded-[var(--radius-md)] border border-border bg-surface-2 p-3">
-            <p className="text-xs font-medium text-muted">Suas anotações:</p>
+            <p className="text-xs font-medium text-muted">Suas anotações</p>
             <p className="mt-1 text-sm text-fg line-clamp-3">{meta.note}</p>
           </div>
         ) : null}

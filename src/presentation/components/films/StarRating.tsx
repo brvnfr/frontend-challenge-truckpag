@@ -34,8 +34,8 @@ export function StarRating({
             size={size}
             className={cn(
               "transition",
-              active ? "fill-brand-500 stroke-brand-600" : "stroke-muted",
-              !readonly && "hover:stroke-brand-600"
+              active ? "fill-warning stroke-warning" : "stroke-muted",
+              !readonly && "hover:stroke-warning"
             )}
           />
         );
