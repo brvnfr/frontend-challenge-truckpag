@@ -1,6 +1,13 @@
 import { useCallback, useMemo } from "react";
-import { useFilmsQuery } from "@/presentation/hooks";
-import { FilmCardSkeleton, FilmList } from "@/presentation/components/films";
+import { useFilmsQuery, useFilmActions } from "@/presentation/hooks";
+import {
+  FilmCardSkeleton,
+  FilmFiltersBar,
+  FilmList,
+} from "@/presentation/components/films";
+import { useGhibliStore } from "@/app/films";
+import { queryFilms } from "@/core/domain/services";
+import type { StarsFilter } from "@/core/domain/types";
 
 function ErrorState(props: { message: string; onRetry: () => void }) {
   return (
@@ -19,13 +26,11 @@ function ErrorState(props: { message: string; onRetry: () => void }) {
   );
 }
 
-function EmptyState() {
+function EmptyState(props: { title: string; description: string }) {
   return (
     <section className="rounded-[var(--radius-lg)] border border-border bg-surface p-6 shadow-[var(--shadow-soft)]">
-      <h2 className="text-lg font-semibold">Nenhum filme encontrado</h2>
-      <p className="mt-2 text-sm text-muted">
-        A API não retornou itens. Tente novamente mais tarde.
-      </p>
+      <h2 className="text-lg font-semibold">{props.title}</h2>
+      <p className="mt-2 text-sm text-muted">{props.description}</p>
     </section>
   );
 }
@@ -33,31 +38,55 @@ function EmptyState() {
 /**
  * FilmsPage
  *
- * Página inicial
+ * Página do desafio: lista filmes do Studio Ghibli com:
+ * - filtros/ordenação
+ * - favorito/assistido
+ * - anotação + avaliação pessoal
+ * - persistência no localStorage
  */
 export function FilmsPage() {
   const { data, isLoading, isError, error, refetch, isFetching } =
     useFilmsQuery();
 
-  const onRetry = useCallback(() => {
+  const metaById = useGhibliStore((s) => s.metaById);
+  const filters = useGhibliStore((s) => s.filters);
+  const sort = useGhibliStore((s) => s.sort);
+
+  const setQuery = useGhibliStore((s) => s.setQuery);
+  const toggleIncludeSynopsis = useGhibliStore((s) => s.toggleIncludeSynopsis);
+  const toggleWatchedOnly = useGhibliStore((s) => s.toggleWatchedOnly);
+  const toggleFavoriteOnly = useGhibliStore((s) => s.toggleFavoriteOnly);
+  const toggleNotedOnly = useGhibliStore((s) => s.toggleNotedOnly);
+  const setStarsFilter = useGhibliStore((s) => s.setStarsFilter);
+  const clearFilters = useGhibliStore((s) => s.clearFilters);
+
+  const setSortKey = useGhibliStore((s) => s.setSortKey);
+  const setSortDirection = useGhibliStore((s) => s.setSortDirection);
+
+  const { onToggleFavorite, onToggleWatched, onSaveNote, onRemoveNote } =
+    useFilmActions();
+
+  const onRefresh = useCallback(() => {
     void refetch();
   }, [refetch]);
 
-  const subtitle = useMemo(() => {
-    const total = data?.length ?? 0;
-    const fetching = isFetching && !isLoading ? " (atualizando…)" : "";
-    return `${total} filme(s)${fetching}`;
-  }, [data?.length, isFetching, isLoading]);
+  const visibleFilms = useMemo(() => {
+    if (!data) return [];
+    return queryFilms({ films: data, metaById, filters, sort });
+  }, [data, filters, metaById, sort]);
+
+  const total = data?.length ?? 0;
+  const visible = visibleFilms.length;
 
   if (isLoading) {
     return (
       <section className="space-y-4">
-        <div className="rounded-[var(--radius-lg)] border border-border bg-surface p-6 shadow-[var(--shadow-soft)]">
+        <section className="rounded-[var(--radius-lg)] border border-border bg-surface p-6 shadow-[var(--shadow-soft)]">
           <h2 className="text-lg font-semibold">Filmes</h2>
           <p className="mt-2 text-sm text-muted">Carregando…</p>
-        </div>
+        </section>
 
-        <div className="grid grid-cols-1 gap-4">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
           {Array.from({ length: 6 }).map((_, idx) => (
             <FilmCardSkeleton key={idx} />
           ))}
@@ -71,34 +100,55 @@ export function FilmsPage() {
       error instanceof Error
         ? error.message
         : "Erro inesperado ao carregar os filmes.";
-    return <ErrorState message={message} onRetry={onRetry} />;
+    return <ErrorState message={message} onRetry={onRefresh} />;
   }
 
   if (!data || data.length === 0) {
-    return <EmptyState />;
+    return (
+      <EmptyState
+        title="Nenhum filme encontrado"
+        description="A API não retornou itens. Tente novamente mais tarde."
+      />
+    );
   }
 
   return (
     <section className="space-y-4">
-      <div className="rounded-[var(--radius-lg)] border border-border bg-surface p-6 shadow-[var(--shadow-soft)]">
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <div>
-            <h2 className="text-lg font-semibold">Filmes</h2>
-            <p className="mt-1 text-sm text-muted">{subtitle}</p>
-          </div>
+      <FilmFiltersBar
+        total={total}
+        visible={visible}
+        isRefreshing={isFetching}
+        onRefresh={onRefresh}
+        filters={filters}
+        sort={sort}
+        onQueryChange={setQuery}
+        onToggleIncludeSynopsis={toggleIncludeSynopsis}
+        onToggleWatchedOnly={toggleWatchedOnly}
+        onToggleFavoriteOnly={toggleFavoriteOnly}
+        onToggleNotedOnly={toggleNotedOnly}
+        onStarsChange={(v: StarsFilter) => setStarsFilter(v)}
+        onClearFilters={clearFilters}
+        onSortKeyChange={setSortKey}
+        onSortDirectionChange={setSortDirection}
+      />
 
-          <button
-            type="button"
-            onClick={onRetry}
-            className="inline-flex items-center justify-center rounded-[var(--radius-md)] border border-border bg-surface-2 px-4 py-2 text-sm font-medium text-fg hover:bg-surface"
-            aria-label="Atualizar lista de filmes"
-          >
-            Atualizar
-          </button>
-        </div>
-      </div>
-
-      <FilmList films={data} />
+      {visible === 0 ? (
+        <EmptyState
+          title="Nenhum resultado"
+          description="Ajuste os filtros ou limpe a busca para ver mais filmes."
+        />
+      ) : (
+        <FilmList
+          films={visibleFilms}
+          metaById={metaById}
+          searchQuery={filters.query}
+          highlightSynopsis={filters.includeSynopsis}
+          onToggleFavorite={onToggleFavorite}
+          onToggleWatched={onToggleWatched}
+          onSaveNote={onSaveNote}
+          onRemoveNote={onRemoveNote}
+        />
+      )}
     </section>
   );
 }
